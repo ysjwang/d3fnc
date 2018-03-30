@@ -10,6 +10,7 @@ gem 'google_places'
 gem 'geocoder'
 gem 'faraday'
 gem 'faraday_middleware'
+gem 'newrelic_rpm'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 5.1.4'
