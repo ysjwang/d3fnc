@@ -3,7 +3,7 @@ Rails.application.routes.draw do
 
   resources :kitchens do
   	 collection do
-  	 	post 'd3fnc'
+  	 	get 'd3fnc'
   	 	post 'test_d3fnc'
   	 	get 'render_d3fnc'
   	 end
