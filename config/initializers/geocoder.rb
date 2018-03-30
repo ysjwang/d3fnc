@@ -1,0 +1,1 @@
+Geocoder.configure(lookup: :google, api_key: 'AIzaSyCvoGBFIcKXBYN5WxIz2yGUSnAWnaasztw')
