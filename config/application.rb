@@ -16,6 +16,6 @@ module D3fnc
     # -- all .rb files in that directory are automatically loaded.
 
 
-    config.web_console.whiny_requests = false
+    
   end
 end
