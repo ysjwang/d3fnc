@@ -27,12 +27,18 @@ class Kitchen < ActiveRecord::Base
 	def self.list_addresses
 		all_kitchens = Kitchen.grab_airtable('all')
 
+
+		puts "All kitchens has #{all_kitchens['records'].count}"
 		all_kitchens['records'].each do |record|
 			record['lat_lng'] = Geocoder.coordinates(record['fields']['address'].to_s + ", New York")
 			# record['distance'] = Geocoder::Calculations.distance_between(my_coordinates, record_coordinates)
+			# puts "#{record['fields']['name']} - (#{record['lat_lng']})"
 		end
 
-		all_kitchens['records'].map{|r| [r['fields']['name'], r['lat_lng']]}
+
+		# puts "All kitchens has #{all_kitchens['records'].count}"
+
+		# all_kitchens['records'].map{|r| [r['fields']['name'], r['lat_lng']]}
 
 	end
 
