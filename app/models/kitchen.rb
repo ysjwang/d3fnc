@@ -4,10 +4,20 @@ class Kitchen < ActiveRecord::Base
 
 		['breakfast', 'lunch', 'dinner', 'all'].include? view ? view : 'all'
 
-		url = "https://api.airtable.com/v0/appIqVKLeqfYsByq8/meal_locations?api_key=keyYg0ZFrEK52u9db&view=#{view}"
-		json_response = JSON.parse(Net::HTTP.get(URI(url)))
+		base_url = "https://api.airtable.com/v0/appIqVKLeqfYsByq8/meal_locations?api_key=keyYg0ZFrEK52u9db&view=#{view}"
+		airtable_json = JSON.parse(Net::HTTP.get(URI(base_url)))
 
-		json_response
+
+		offset = airtable_json['offset']
+		while offset
+			new_url = base_url + "&offset=#{offset}"
+			new_airtable_json = JSON.parse(Net::HTTP.get(URI(new_url)))
+			airtable_json['records'] = airtable_json['records'] + new_airtable_json['records']
+
+			offset = new_airtable_json['offset']
+		end
+
+		airtable_json
 
 	end
 

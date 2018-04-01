@@ -51,7 +51,7 @@ class KitchensController < ApplicationController
 
 
 		if parsed_meal_type == 'none'
-			formatted_response = "It's too late right now to find food. #{meal_type} and #{parsed_meal_type}"
+			formatted_response = "It's too late right now to find food."
 		elsif location.blank?
 			formatted_response = "Where are you looking for a #{parsed_meal_type}?"
 			
@@ -59,13 +59,18 @@ class KitchensController < ApplicationController
 
 			airtable_result = parse_airtable(meal_type, location)
 
-			location_name, location_address, location_distance = [
+			location_name, location_address, location_distance, location_subway_line, location_subway_stop = [
 				airtable_result['fields']['name'],
 				airtable_result['fields']['address'],
-				airtable_result['distance'].round(2)
+				airtable_result['distance'].round(2),
+				airtable_result['fields']['subway_lines'],
+				airtable_result['fields']['subway_stop']
 			]
 
-			formatted_response = "It sounds like you are looking for #{parsed_meal_type} near #{location}. The nearest place for #{parsed_meal_type} to #{location} is #{location_name}, at #{location_address}, about #{location_distance} miles away"
+
+			formatted_response = "It sounds like you are looking for #{parsed_meal_type} near #{location} (#{get_coordinates(location).to_s}. 
+			The nearest place for #{parsed_meal_type} from there is #{location_name}, at #{location_address}, about #{location_distance} miles away.
+			The closest subway station is the #{location_subway_stop}, on the #{location_subway_line} trains."
 		end
 
 		@response = {
@@ -82,6 +87,9 @@ class KitchensController < ApplicationController
 	end
 
 
+	def get_coordinates(location)
+		Geocoder.coordinates(location)
+	end
 
 
 
@@ -90,18 +98,20 @@ class KitchensController < ApplicationController
 
 
 	
-		# my_coordinates = Geocoder.coordinates(my_location)
-		# url = "https://api.airtable.com/v0/appIqVKLeqfYsByq8/meal_locations?api_key=keyYg0ZFrEK52u9db&view=#{meal_type}"
-		json_response = Kitchen.grab_airtable(meal_type)
+		my_coordinates = get_coordinates(my_location)
+		airtable_json = Kitchen.grab_airtable(meal_type)
 
 
-		json_response['records'].each do |record|
+		airtable_json['records'].each do |record|
 			# record_coordinates = Geocoder.coordinates(record['fields']['address'] + ", New York")
 			record['distance'] = Geocoder::Calculations.distance_between(my_coordinates, [record['fields']['lat'], record['fields']['lng']])
 		end
 
-		sorted = json_response['records'].sort_by{|record| record['distance'].to_f}
 
+		sorted = airtable_json['records'].sort_by{|record| record['distance'].to_f}
+
+
+		puts JSON.pretty_generate(sorted)
 
 		sorted.first
 
