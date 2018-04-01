@@ -83,28 +83,27 @@ class KitchensController < ApplicationController
 
 
 
+
+
+
 	def parse_airtable(meal_type, my_location)
 
 
-		
-
-
-
-		my_coordinates = Geocoder.coordinates(my_location)
-		url = "https://api.airtable.com/v0/appIqVKLeqfYsByq8/meal_locations?api_key=keyYg0ZFrEK52u9db&view=#{meal_type}"
-		json_response = JSON.parse(Net::HTTP.get(URI(url)))
+	
+		# my_coordinates = Geocoder.coordinates(my_location)
+		# url = "https://api.airtable.com/v0/appIqVKLeqfYsByq8/meal_locations?api_key=keyYg0ZFrEK52u9db&view=#{meal_type}"
+		json_response = Kitchen.grab_airtable(meal_type)
 
 
 		json_response['records'].each do |record|
-			record_coordinates = Geocoder.coordinates(record['fields']['address'] + ", New York")
-			record['distance'] = Geocoder::Calculations.distance_between(my_coordinates, record_coordinates)
+			# record_coordinates = Geocoder.coordinates(record['fields']['address'] + ", New York")
+			record['distance'] = Geocoder::Calculations.distance_between(my_coordinates, [record['fields']['lat'], record['fields']['lng']])
 		end
 
 		sorted = json_response['records'].sort_by{|record| record['distance'].to_f}
 
 
 		sorted.first
-
 
 
 
