@@ -86,7 +86,11 @@ class KitchensController < ApplicationController
 
 
 	def get_coordinates(location)
-		Geocoder.coordinates(location)
+		location = location + ", new york city"
+		puts "Trying to get coordinates for #{location}"
+		coordinates = Geocoder.coordinates(location)
+		puts "Coordinates for #{location} are #{coordinates.to_s}"
+		return coordinates
 	end
 
 
@@ -101,7 +105,6 @@ class KitchensController < ApplicationController
 
 
 		airtable_json['records'].each do |record|
-			# record_coordinates = Geocoder.coordinates(record['fields']['address'] + ", New York")
 			record['distance'] = Geocoder::Calculations.distance_between(my_coordinates, [record['fields']['lat'], record['fields']['lng']])
 		end
 
@@ -109,7 +112,7 @@ class KitchensController < ApplicationController
 		sorted = airtable_json['records'].sort_by{|record| record['distance'].to_f}
 
 
-		puts JSON.pretty_generate(sorted)
+		# puts JSON.pretty_generate(sorted)
 
 		sorted.first
 
