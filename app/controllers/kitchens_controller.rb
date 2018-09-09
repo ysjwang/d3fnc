@@ -57,7 +57,8 @@ class KitchensController < ApplicationController
 			
 		else
 
-			airtable_result = parse_airtable(meal_type, location)
+			my_coordinates = get_coordinates(location)
+			airtable_result = parse_airtable(meal_type, my_coordinates).first
 
 			location_name, location_address, location_distance, location_subway_line, location_subway_stop = [
 				airtable_result['fields']['name'],
@@ -68,10 +69,10 @@ class KitchensController < ApplicationController
 			]
 
 
-			formatted_response = "It sounds like you are looking for #{parsed_meal_type} near #{location.titlecase}. " \
-			"The nearest place for #{parsed_meal_type.titlecase} from there is #{location_name.titlecase}, " \
-			"at #{location_address.titlecase}, about #{location_distance} miles away. " \
-			"The closest subway station is the #{location_subway_stop.titlecase} stop, on the #{location_subway_line} train." 
+			formatted_response = "It sounds like you are looking for #{parsed_meal_type} near #{location.titlecase.strip}. \n\n" \
+			"The nearest place for #{parsed_meal_type} from there is #{location_name.titlecase.strip}, " \
+			"at #{location_address.titlecase.strip}, about #{location_distance} miles from #{location.titlecase.strip}. \n\n" \
+			"The closest subway station is the #{location_subway_stop.titlecase.strip} stop, on the #{location_subway_line.strip} train." 
 
 			formatted_response
 		end
@@ -101,11 +102,14 @@ class KitchensController < ApplicationController
 
 
 
-	def parse_airtable(meal_type, my_location)
 
 
-	
-		my_coordinates = get_coordinates(my_location)
+	def parse_airtable(meal_type, my_coordinates)
+
+
+		
+		distance_threshold = 1.00 # set this as the distance threshold miles, to include search results for. This can be tweaked as needed
+
 		airtable_json = Kitchen.grab_airtable(meal_type)
 
 
@@ -114,12 +118,12 @@ class KitchensController < ApplicationController
 		end
 
 
-		sorted = airtable_json['records'].sort_by{|record| record['distance'].to_f}
+		sorted_results = airtable_json['records'].select{|record| record['distance'].to_f < distance_threshold}.sort_by{|record| record['distance'].to_f}
 
 
-		# puts JSON.pretty_generate(sorted)
+		puts JSON.pretty_generate(sorted_results)
 
-		sorted.first
+		return sorted_results
 
 
 
