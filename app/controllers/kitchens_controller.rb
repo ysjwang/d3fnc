@@ -34,7 +34,7 @@ class KitchensController < ApplicationController
 		meal_type = params[:result][:parameters][:meal_type].to_s
 		location = params[:result][:parameters][:location].values.first.to_s
 
-		calculated_meal_type_by_time = 
+
 
 
 		calculated_meal_type_by_time = case Time.now.hour
