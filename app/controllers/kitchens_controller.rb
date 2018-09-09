@@ -68,7 +68,12 @@ class KitchensController < ApplicationController
 			]
 
 
-			formatted_response = "It sounds like you are looking for #{parsed_meal_type} near #{location}. The nearest place for #{parsed_meal_type} from there is #{location_name}, at #{location_address}, about #{location_distance} miles away. The closest subway station is the #{location_subway_stop}, on the #{location_subway_line} trains."
+			formatted_response = "It sounds like you are looking for #{parsed_meal_type} near #{location.titlecase}. " \
+			"The nearest place for #{parsed_meal_type.titlecase} from there is #{location_name.titlecase}, " \
+			"at #{location_address.titlecase}, about #{location_distance} miles away. " \
+			"The closest subway station is the #{location_subway_stop.titlecase} stop, on the #{location_subway_line} train." 
+
+			formatted_response
 		end
 
 		@response = {
