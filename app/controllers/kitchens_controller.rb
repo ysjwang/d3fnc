@@ -8,14 +8,8 @@ class KitchensController < ApplicationController
 
 	before_action :destroy_session
 
-	def d3fnc
-		@kitchens = ['one', 'two', 'three']
-		# json_response(@kitchens)
-		# render json: @kitchens, status: :ok
-		json_response(@kitchens)
-	end
 
-	def test_d3fnc
+	def d3fnc
 		respond_to do |format|
 			# format.html { redirect_to render_d3fnc_kitchens_url }
 			# format.json { redirect_to render_d3fnc_kitchens_url }
@@ -31,10 +25,13 @@ class KitchensController < ApplicationController
 
 	def render_d3fnc
 
+		distance_threshold = 1.00 # set this as the distance threshold miles, to include search results for. This can be tweaked as needed
+
+
 		meal_type = params[:result][:parameters][:meal_type].to_s
 		location = params[:result][:parameters][:location].values.first.to_s
 
-
+		puts "Meal type came back as #{meal_type}"
 
 
 		calculated_meal_type_by_time = case Time.now.hour
@@ -53,26 +50,29 @@ class KitchensController < ApplicationController
 		if parsed_meal_type == 'none'
 			formatted_response = "It's too late right now to find food."
 		elsif location.blank?
+			puts "We got into here for #{parsed_meal_type}"
 			formatted_response = "Where are you looking for a #{parsed_meal_type}?"
 			
 		else
 
 			my_coordinates = get_coordinates(location)
-			airtable_result = parse_airtable(meal_type, my_coordinates).first
+			airtable_results = parse_airtable(parsed_meal_type, my_coordinates, distance_threshold)
+			primary_result = airtable_results.first
 
 			location_name, location_address, location_distance, location_subway_line, location_subway_stop = [
-				airtable_result['fields']['name'],
-				airtable_result['fields']['address'],
-				airtable_result['distance'].round(2),
-				airtable_result['fields']['subway_lines'],
-				airtable_result['fields']['subway_stop']
+				primary_result['fields']['name'],
+				primary_result['fields']['address'],
+				primary_result['distance'].round(2),
+				primary_result['fields']['subway_lines'],
+				primary_result['fields']['subway_stop']
 			]
 
 
-			formatted_response = "It sounds like you are looking for #{parsed_meal_type} near #{location.titlecase.strip}. \n\n" \
+			formatted_response = "It sounds like you are looking for #{parsed_meal_type} today near #{location.titlecase.strip}. \n\n" \
 			"The nearest place for #{parsed_meal_type} from there is #{location_name.titlecase.strip}, " \
 			"at #{location_address.titlecase.strip}, about #{location_distance} miles from #{location.titlecase.strip}. \n\n" \
-			"The closest subway station is the #{location_subway_stop.titlecase.strip} stop, on the #{location_subway_line.strip} train." 
+			"The closest subway station is the #{location_subway_stop.titlecase.strip} stop, on the #{location_subway_line.strip} train. \n\n" \
+			"There are #{airtable_results.count - 1} other results within #{distance_threshold} miles of #{location.titlecase.strip}."
 
 			formatted_response
 		end
@@ -83,6 +83,7 @@ class KitchensController < ApplicationController
 		}
 
 		json_response(@response)
+
 	end
 
 	def json_response(object, status = :ok)
@@ -104,11 +105,10 @@ class KitchensController < ApplicationController
 
 
 
-	def parse_airtable(meal_type, my_coordinates)
+	def parse_airtable(meal_type, my_coordinates, distance_threshold=1)
 
 
-		
-		distance_threshold = 1.00 # set this as the distance threshold miles, to include search results for. This can be tweaked as needed
+		puts "Attempting to find #{meal_type} near #{my_coordinates}"
 
 		airtable_json = Kitchen.grab_airtable(meal_type)
 
