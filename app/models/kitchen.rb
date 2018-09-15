@@ -2,7 +2,7 @@ class Kitchen < ActiveRecord::Base
   
 	def self.grab_airtable(view)
 
-		['breakfast', 'lunch', 'dinner', 'all'].include? view ? view : 'all'
+		['breakfast', 'lunch', 'dinner', 'all', 'code_blue', 'clothing'].include? view ? view : 'all'
 
 		base_url = "https://api.airtable.com/v0/appIqVKLeqfYsByq8/meal_locations?api_key=keyYg0ZFrEK52u9db&view=#{view}"
 		airtable_json = JSON.parse(Net::HTTP.get(URI(base_url)))
