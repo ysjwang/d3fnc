@@ -34,10 +34,22 @@ class KitchensController < ApplicationController
 		intent_name = params[:result][:metadata][:intentName].to_s
 
 		meal_type = params[:result][:parameters][:meal_type].to_s
-		location = params[:result][:parameters][:location].values.first.to_s
+		location = params[:result][:parameters][:location][:"business-name"].to_s
 
 		puts "Intent was #{intent_name}"
+		puts "Meal type was #{meal_type} - OR #{params[:result][:parameters]}"
+		puts "Location was #{location} - OR #{params[:result][:parameters][:location]}"
 
+
+
+		# Location was {"country"=>"", 
+		# 	"city"=>"", "admin-area"=>"", 
+		# 	"business-name"=>"times square", 
+		# 	"street-address"=>"", 
+		# 	"zip-code"=>"", 
+		# 	"shortcut"=>"", 
+		# 	"island"=>"", 
+		# 	"subadmin-area"=>""}
 
 		calculated_meal_type_by_time = case Time.now.hour
 		when 0..6 then 'none'
@@ -86,8 +98,10 @@ class KitchensController < ApplicationController
 
 
 			if parsed_meal_type == 'none'
+				puts "meal type was none"
 				formatted_response = "It's too late right now to find food."
 			elsif location.blank?
+				puts "location was blank"
 				formatted_response = "Where are you looking for a #{parsed_meal_type}?"
 				
 			else
